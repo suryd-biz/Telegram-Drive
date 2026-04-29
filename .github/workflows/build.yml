@@ -1,0 +1,40 @@
+name: Build Aplikasi Windows
+
+# Ini agar kita bisa menjalankan prosesnya secara manual dengan klik tombol
+on: 
+  workflow_dispatch: 
+
+jobs:
+  build-windows-app:
+    runs-on: windows-latest # Kita meminjam server dengan OS Windows
+
+    steps:
+      - name: Checkout Kode
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20 # Menggunakan Node.js versi stabil
+
+      - name: Install Bahasa Rust (Dibutuhkan oleh Tauri)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Install Dependensi Aplikasi
+        run: |
+          cd app
+          npm install
+
+      - name: Proses Build (Merakit Aplikasi)
+        run: |
+          cd app
+          npm run tauri build
+
+      - name: Simpan Hasil Build (Upload Artifact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: Telegram-Drive-Setup-Windows
+          # Ini adalah folder tempat Tauri menyimpan file .exe / .msi setelah selesai dirakit
+          path: app/src-tauri/target/release/bundle/
